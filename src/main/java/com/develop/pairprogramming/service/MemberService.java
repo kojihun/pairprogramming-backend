@@ -25,12 +25,11 @@ public class MemberService {
      * 회원가입을 한다.
      *
      * @param member 저장을 할 Member 객체
-     * @return memberId 회원가입을 한 회원의 id를 리턴한다.
      */
     @Transactional
-    public Long signup(Member member) {
+    public void signup(Member member) {
+        member.encryptPassword();
         memberRepository.save(member);
-        return member.getMemberId();
     }
 
     /**

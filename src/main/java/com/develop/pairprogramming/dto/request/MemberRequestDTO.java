@@ -1,6 +1,5 @@
 package com.develop.pairprogramming.dto.request;
 
-import com.develop.pairprogramming.model.Member;
 import lombok.Getter;
 import lombok.Setter;
 
