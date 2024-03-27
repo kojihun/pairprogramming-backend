@@ -1,24 +1,23 @@
 package com.develop.pairprogramming.controller;
 
+import com.develop.pairprogramming.config.JwtTokenProvider;
 import com.develop.pairprogramming.dto.common.ApiResponse;
 import com.develop.pairprogramming.dto.request.MemberRequestDTO;
+import com.develop.pairprogramming.dto.response.MemberSigninResponseDTO;
 import com.develop.pairprogramming.dto.response.MemberSignupResponseDTO;
 import com.develop.pairprogramming.model.Member;
 import com.develop.pairprogramming.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
 @RestController
 public class MemberApiController {
     private final MemberService memberService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 회원가입
@@ -36,11 +35,11 @@ public class MemberApiController {
     /**
      * 이메일 유효성 검증
      *
-     * @param email 유효성 검증을 위한 이메일
+     * @param memberRequestDTO 유효성 검증을 위한 이메일
      */
     @PostMapping("/validation")
-    public ApiResponse<?> validateDuplicateEmail(@RequestBody String email) {
-        memberService.validateDuplicateEmail(email);
+    public ApiResponse<?> validateDuplicateEmail(@RequestBody MemberRequestDTO memberRequestDTO) {
+        memberService.validateDuplicateEmail(memberRequestDTO.getEmail());
 
         return ApiResponse.createSuccessWithNoContent();
     }
@@ -48,16 +47,15 @@ public class MemberApiController {
     /**
      * 로그인
      *
-     * @param request HttpServletRequest
      * @param memberRequestDTO email과 password가 있는 DTO
      */
     @PostMapping("/signin")
-    public ApiResponse<?> signin(HttpServletRequest request, @RequestBody MemberRequestDTO memberRequestDTO) {
-        // TODO 세션 처리과정 추가 필요
+    public ApiResponse<MemberSigninResponseDTO> signin(@RequestBody MemberRequestDTO memberRequestDTO) {
         Member member = Member.of(memberRequestDTO);
-        memberService.signin(member);
+        Member loginedMember = memberService.signin(member);
+        String accessToken = jwtTokenProvider.generateToken(loginedMember);
 
-        return ApiResponse.createSuccessWithNoContent();
+        return ApiResponse.createSuccess(MemberSigninResponseDTO.of(loginedMember, accessToken));
     }
 
     /**
@@ -65,8 +63,18 @@ public class MemberApiController {
      *
      */
     @PostMapping("/signout")
-    public ApiResponse<?> signout() {
-        // TODO 세션 삭제과정 추가 필요
+    public ApiResponse<?> signout(HttpServletRequest request) {
+        HttpSession httpSession = request.getSession();
+        httpSession.invalidate();
+
+        return ApiResponse.createSuccessWithNoContent();
+    }
+
+    /**
+     * 화면 마운트시 토큰 유효여부 확인
+     */
+    @GetMapping("/token")
+    public ApiResponse<?> validateToken() {
         return ApiResponse.createSuccessWithNoContent();
     }
 }

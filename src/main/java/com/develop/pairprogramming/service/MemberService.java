@@ -50,12 +50,14 @@ public class MemberService {
      * @param member 로그인을 할 Member 객체
      */
     public Member signin(Member member) {
+        member.encryptPassword();
+
         String email = member.getEmail();
         String password = member.getPassword();
 
         List<Member> findMembers = memberRepository.findMemberByEmailAndPassword(email, password);
-        if (!findMembers.isEmpty()) {
-            throw new NotFoundMemberException("아이디 또는 비밀번호 오류입니다.");
+        if (findMembers.isEmpty()) {
+            throw new NotFoundMemberException("아이디 또는 비밀번호가 일치하지 않습니다.");
         }
 
         return findMembers.get(0);
