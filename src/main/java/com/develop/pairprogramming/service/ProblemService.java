@@ -1,6 +1,7 @@
 package com.develop.pairprogramming.service;
 
 import com.develop.pairprogramming.model.Problem;
+import com.develop.pairprogramming.model.ProblemStandardFormat;
 import com.develop.pairprogramming.model.Rank;
 import com.develop.pairprogramming.repository.ProblemRepository;
 import lombok.RequiredArgsConstructor;
@@ -103,7 +104,39 @@ public class ProblemService {
         return problemRepository.getTotalSearchedRankAndTitleProblemsCount(searchInput, searchSelect);
     }
 
+
+    /**
+     * 주어진 문제 ID에 해당하는 문제를 찾아 반환하는 메서드
+     *
+     * @param problemId 문제 ID
+     * @return 해당 문제 객체
+     */
     public Problem findProblemById(Long problemId) {
+        Problem findProblem = problemRepository.findProblemById(problemId);
+
         return problemRepository.findProblemById(problemId);
+    }
+
+    /**
+     * 주어진 문제 ID에 해당하는 문제를 찾아 반환하는 메서드
+     *
+     * @param problemId 문제 ID
+     * @return 해당 문제 객체
+     */
+//    public Problem findProblemById(Long problemId) {
+//        return problemRepository.findProblemById(problemId);
+//    }
+
+
+    /**
+     * 주어진 문제 표준 형식 ID와 언어 유형에 해당하는 문제 표준 형식을 반환하는 메서드
+     *
+     * @param problemId     문제 ID
+     * @param languageType  언어 유형
+     * @return 주어진 문제 표준 형식 ID와 언어 유형에 해당하는 문제 표준 형식 객체
+     */
+    public ProblemStandardFormat getProblemStandardFormat(Long problemId, String languageType) {
+        Problem findProblem = problemRepository.findProblemById(problemId);
+        return problemRepository.getProblemStandardFormat(findProblem, languageType);
     }
 }

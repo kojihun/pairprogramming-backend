@@ -19,12 +19,12 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
-public class CompileBuilderUtil {
+public class JavaCompilerUtil {
     private static final String BASE_PATH = "C:/Users/ADMIN/Desktop/";
-    private static final String CLASS_NAME = "DynamicClass";
-    private static final String METHOD_NAME = "runMethod";
+    private static final String CLASS_NAME = "Solution";
+    private static final String METHOD_NAME = "solution";
 
-    public Object compileWithJava(Editor editor) throws FolderDeleteException, FileDeleteException {
+    public Object compile(Editor editor) throws FolderDeleteException, FileDeleteException {
         // UUID를 사용하여 고유한 경로 생성
         String uuid = UUID.randomUUID().toString();
         String uuidPath = BASE_PATH + uuid + "/";
@@ -93,6 +93,26 @@ public class CompileBuilderUtil {
 
         // 매개변수의 클래스 배열 추출
         Class<?>[] arguments = extractParameterClasses(params);
+        for (int i = 0; i < params.length; i++) {
+            if (params[i] instanceof Integer) {
+                arguments[i] = int.class;
+            } else if (params[i] instanceof Long) {
+                arguments[i] = long.class;
+            } else if (params[i] instanceof Float) {
+                arguments[i] = float.class;
+            } else if (params[i] instanceof Double) {
+                arguments[i] = double.class;
+            } else if (params[i] instanceof Boolean) {
+                arguments[i] = boolean.class;
+            } else {
+                arguments[i] = params[i].getClass();
+            }
+        }
+
+//        Class<?>[] arguments = extractParameterClasses(params);
+//        for (int i = 0; i < params.length; i++) {
+//            arguments[i] = params[i].getClass();
+//        }
 
         // 표준 출력 및 오류 스트림 임시 저장
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

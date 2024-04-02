@@ -7,4 +7,5 @@ import lombok.Setter;
 @Setter
 public class EditorRequestDTO {
     private String code;
+    private String languageType;
 }

@@ -8,11 +8,12 @@ import com.develop.pairprogramming.exception.FolderDeleteException;
 import com.develop.pairprogramming.exception.PythonSyntaxErrorException;
 import com.develop.pairprogramming.model.Editor;
 import com.develop.pairprogramming.service.EditorService;
-import com.develop.pairprogramming.util.CompileBuilderUtil;
+import com.develop.pairprogramming.util.JavaCompilerUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @RequestMapping("/api/editor")
@@ -20,7 +21,7 @@ import java.util.Map;
 @RestController
 public class EditorApiController {
     private final EditorService editorService;
-    private final CompileBuilderUtil compileBuilderUtil;
+    private final JavaCompilerUtil javaCompilerUtil;
 
     @PostMapping("/compile/python")
     public ApiResponse<EditorResponseDTO> compileWithPython(@RequestBody EditorRequestDTO editorRequestDTO) throws IOException, PythonSyntaxErrorException {
@@ -31,11 +32,24 @@ public class EditorApiController {
 
     @PostMapping("/compile/java")
     public Object compileWithJava(@RequestBody EditorRequestDTO editorRequestDTO) throws FileDeleteException, FolderDeleteException {
-        Object object = compileBuilderUtil.compileWithJava(Editor.of(editorRequestDTO));
 
+        Object object = javaCompilerUtil.compile(Editor.of(editorRequestDTO));
         if (object instanceof String) {
             return object;
         }
-        return compileBuilderUtil.runWithJava(object, new Object[]{});
+
+        long beforeTime = System.currentTimeMillis();
+
+        int participant = 1;
+        Object[] params = {participant};
+
+        Map<String, Object> output = javaCompilerUtil.runWithJava(object, params);
+        System.out.println("output = " + output);
+
+        long afterTime = System.currentTimeMillis();
+
+        Map<String, Object> returnMap = new HashMap<>(output);
+        returnMap.put("performance", (afterTime - beforeTime));
+        return returnMap;
     }
 }

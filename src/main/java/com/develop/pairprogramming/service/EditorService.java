@@ -1,8 +1,12 @@
 package com.develop.pairprogramming.service;
 
+import com.develop.pairprogramming.exception.FileDeleteException;
+import com.develop.pairprogramming.exception.FolderDeleteException;
 import com.develop.pairprogramming.exception.PythonSyntaxErrorException;
 import com.develop.pairprogramming.model.Editor;
+import com.develop.pairprogramming.util.JavaCompilerUtil;
 import com.develop.pairprogramming.util.MethodExecutationUtil;
+import com.develop.pairprogramming.util.PythonCompilerUtil;
 import lombok.RequiredArgsConstructor;
 import org.python.util.PythonInterpreter;
 import org.springframework.stereotype.Service;
@@ -19,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Service
 public class EditorService {
-    // 임시경로
+    private final JavaCompilerUtil javaCompilerUtil;
     private final String path = "C:/Users/ADMIN/Desktop/";
 
     public Editor compileWithPython(Editor editor) throws IOException, PythonSyntaxErrorException {
@@ -39,65 +43,24 @@ public class EditorService {
                 .build();
     }
 
-    public void compileWithJava(Editor editor) {
-        String uuid = UUID.randomUUID().toString();
-        String uuidPath = path + uuid + "/";
-
-        File newFolder = new File(uuidPath);
-        File sourceFile = new File(uuidPath + "DynamicClass.java");
-        File classFile = new File(uuidPath + "DynamicClass.class");
-
-        try {
-            boolean isMadeNewFolder = newFolder.mkdir();
-            new FileWriter(sourceFile).append(editor.getCode()).close();
-
-            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            int compileResult = compiler.run(null, null, null, sourceFile.getPath());
-            if (compileResult == 1) {
-                System.out.println("Hello");
-            }
-
-            URLClassLoader urlClassLoader = URLClassLoader.newInstance(new URL[] {new File(uuidPath).toURI().toURL()});
-            Class<?> dynamicClass = Class.forName("DynamicClass", true, urlClassLoader);
-
-            Object object = dynamicClass.getDeclaredConstructor().newInstance();
-            this.runObject(object);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (sourceFile.exists()) {
-                boolean isSourceFileDeleted = sourceFile.delete();
-            }
-            if (classFile.exists()) {
-                boolean isClassFileDeleted = classFile.delete();
-            }
-            if (newFolder.exists()) {
-                boolean isNewFolderDeleted = newFolder.delete();
-            }
+    public Object compileWithJava(Editor editor) throws FileDeleteException, FolderDeleteException {
+        Object object = javaCompilerUtil.compile(editor);
+        if (object instanceof String) {
+            return object;
         }
-    }
 
-    public Map<String, Object> runObject(Object object) {
-        String methodName = "runMethod";
+        long beforeTime = System.currentTimeMillis();
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        PrintStream printStreamOut = System.out;
+        int participant = 1;
+        Object[] params = {participant};
 
-        try {
-            System.setOut(new PrintStream(printStreamOut));
+        Map<String, Object> output = javaCompilerUtil.runWithJava(object, params);
+        System.out.println("output = " + output);
 
-            Map<String, Object> result = new HashMap<>();
-            Class[] arguments = new Class[0];
+        long afterTime = System.currentTimeMillis();
 
-            Object[] params = new Object[0];
-            result = MethodExecutationUtil.timeOutCall(object, methodName, params, arguments);
-
-            System.out.println("result = " + result);
-
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Map<String, Object> returnMap = new HashMap<>(output);
+        returnMap.put("performance", (afterTime - beforeTime));
+        return returnMap;
     }
 }

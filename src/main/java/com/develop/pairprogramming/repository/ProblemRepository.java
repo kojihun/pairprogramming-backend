@@ -1,6 +1,7 @@
 package com.develop.pairprogramming.repository;
 
 import com.develop.pairprogramming.model.Problem;
+import com.develop.pairprogramming.model.ProblemStandardFormat;
 import com.develop.pairprogramming.model.Rank;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -71,5 +72,12 @@ public class ProblemRepository {
 
     public Problem findProblemById(Long problemId) {
         return em.find(Problem.class, problemId);
+    }
+
+    public ProblemStandardFormat getProblemStandardFormat(Problem problem, String languageType) {
+        return em.createQuery("select p from ProblemStandardFormat p where p.problem = :problem and p.languageType = :languageType", ProblemStandardFormat.class)
+                .setParameter("problem", problem)
+                .setParameter("languageType", languageType)
+                .getSingleResult();
     }
 }
