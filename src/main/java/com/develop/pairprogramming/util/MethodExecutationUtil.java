@@ -44,9 +44,7 @@ public class MethodExecutationUtil {
 
         try {
             returnMap = future.get(TIMEOUT_LONG, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             returnMap.put("status", "FAIL");
         } finally {
             executorService.shutdown();

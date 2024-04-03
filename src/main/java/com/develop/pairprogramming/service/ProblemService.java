@@ -1,20 +1,26 @@
 package com.develop.pairprogramming.service;
 
-import com.develop.pairprogramming.model.Problem;
-import com.develop.pairprogramming.model.ProblemStandardFormat;
-import com.develop.pairprogramming.model.Rank;
+import com.develop.pairprogramming.exception.FileDeleteException;
+import com.develop.pairprogramming.exception.FolderDeleteException;
+import com.develop.pairprogramming.exception.JavaCompileErrorException;
+import com.develop.pairprogramming.model.*;
+import com.develop.pairprogramming.repository.MemberRepository;
 import com.develop.pairprogramming.repository.ProblemRepository;
+import com.develop.pairprogramming.util.JavaCompilerUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class ProblemService {
+    private final JavaCompilerUtil javaCompilerUtil;
     private final ProblemRepository problemRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * 전체 문제를 조회한다.
@@ -112,8 +118,6 @@ public class ProblemService {
      * @return 해당 문제 객체
      */
     public Problem findProblemById(Long problemId) {
-        Problem findProblem = problemRepository.findProblemById(problemId);
-
         return problemRepository.findProblemById(problemId);
     }
 
@@ -138,5 +142,49 @@ public class ProblemService {
     public ProblemStandardFormat getProblemStandardFormat(Long problemId, String languageType) {
         Problem findProblem = problemRepository.findProblemById(problemId);
         return problemRepository.getProblemStandardFormat(findProblem, languageType);
+    }
+
+    public List<ProblemTestCase> getAllProblemTestCases(Problem problem) {
+        return problemRepository.findAllProblemTestCasesByProblemId(problem);
+    }
+
+    @Transactional
+    public void doProblemCompile(ProblemAnswer problemAnswer, Problem problem) throws FileDeleteException, FolderDeleteException {
+        String languageType = problemAnswer.getLanguage().name();
+        switch (languageType) {
+            case "PYTHON":
+                break;
+            case "JAVA":
+                Object compile = javaCompilerUtil.compile(problemAnswer);
+                if (compile instanceof String) {
+                    throw new JavaCompileErrorException((String) compile);
+                }
+
+                boolean isSuccess = true;
+
+                // 테스트케이스 조회
+                List<ProblemTestCase> problemTestCases = this.getAllProblemTestCases(problem);
+                for (ProblemTestCase problemTestCase : problemTestCases) {
+                    Object[] params = {problemTestCase.getInput()};
+                    String output = problemTestCase.getOutput();
+
+                    Map<String, Object> run = javaCompilerUtil.run(compile, params, output);
+                    if(!run.get("return").equals(problemTestCase.getOutput())) {
+                        isSuccess = false;
+                    }
+                }
+
+                if (isSuccess) {
+                    problemAnswer.changeStatus(ProblemAnswerStatus.SUCCESS);
+                }
+
+                problemAnswer.changeProblem(problem);
+                problemAnswer.changeMember(memberRepository.findById(1L));
+
+                problemRepository.save(problemAnswer);
+                break;
+            default:
+                break;
+        }
     }
 }

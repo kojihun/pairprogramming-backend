@@ -16,7 +16,9 @@ import java.util.List;
 public class ProblemDetailResponseDTO {
     private Long problemId;
     private String title;
-    private String problemDescription;
+    @Lob
+    private String description;
+    @Lob
     private String restriction;
     @Lob
     private String inputOutputExample;
@@ -26,10 +28,10 @@ public class ProblemDetailResponseDTO {
     }
 
     @Builder
-    public ProblemDetailResponseDTO(Long problemId, String title, String problemDescription, String restriction, String inputOutputExample, Rank rank) {
+    public ProblemDetailResponseDTO(Long problemId, String title, String description, String restriction, String inputOutputExample, Rank rank) {
         this.problemId = problemId;
         this.title = title;
-        this.problemDescription = problemDescription;
+        this.description = description;
         this.restriction = restriction;
         this.inputOutputExample = inputOutputExample;
         this.rank = rank;
@@ -39,7 +41,7 @@ public class ProblemDetailResponseDTO {
         return ProblemDetailResponseDTO.builder()
                 .problemId(problem.getProblemId())
                 .title(problem.getTitle())
-                .problemDescription(problem.getProblemDescription())
+                .description(problem.getDescription())
                 .restriction(problem.getRestriction())
                 .inputOutputExample(problem.getInputOutputExample())
                 .rank(problem.getRank())

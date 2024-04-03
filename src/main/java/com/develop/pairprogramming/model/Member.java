@@ -2,7 +2,6 @@ package com.develop.pairprogramming.model;
 
 import com.develop.pairprogramming.dto.request.MemberRequestDTO;
 import jakarta.persistence.*;
-import jnr.ffi.Struct;
 import lombok.Builder;
 import lombok.Getter;
 

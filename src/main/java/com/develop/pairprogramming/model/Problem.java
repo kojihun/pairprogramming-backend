@@ -11,7 +11,9 @@ public class Problem {
     @GeneratedValue
     private Long problemId;
     private String title;
-    private String problemDescription;
+    @Lob
+    private String description;
+    @Lob
     private String restriction;
     @Lob
     private String inputOutputExample;
@@ -22,9 +24,9 @@ public class Problem {
     }
 
     @Builder
-    public Problem(String title, String problemDescription, String restriction, String inputOutputExample, Rank rank) {
+    public Problem(String title, String description, String restriction, String inputOutputExample, Rank rank) {
         this.title = title;
-        this.problemDescription = problemDescription;
+        this.description = description;
         this.restriction = restriction;
         this.inputOutputExample = inputOutputExample;
         this.rank = rank;

@@ -1,12 +1,13 @@
 package com.develop.pairprogramming.controller;
 
 import com.develop.pairprogramming.dto.common.ApiResponse;
-import com.develop.pairprogramming.dto.request.EditorRequestDTO;
+import com.develop.pairprogramming.dto.request.ProblemAnswerRequestDTO;
 import com.develop.pairprogramming.dto.response.EditorResponseDTO;
 import com.develop.pairprogramming.exception.FileDeleteException;
 import com.develop.pairprogramming.exception.FolderDeleteException;
 import com.develop.pairprogramming.exception.PythonSyntaxErrorException;
 import com.develop.pairprogramming.model.Editor;
+import com.develop.pairprogramming.model.ProblemAnswer;
 import com.develop.pairprogramming.service.EditorService;
 import com.develop.pairprogramming.util.JavaCompilerUtil;
 import lombok.RequiredArgsConstructor;
@@ -24,16 +25,15 @@ public class EditorApiController {
     private final JavaCompilerUtil javaCompilerUtil;
 
     @PostMapping("/compile/python")
-    public ApiResponse<EditorResponseDTO> compileWithPython(@RequestBody EditorRequestDTO editorRequestDTO) throws IOException, PythonSyntaxErrorException {
-        Editor editor = editorService.compileWithPython(Editor.of(editorRequestDTO));
+    public ApiResponse<EditorResponseDTO> compileWithPython(@RequestBody ProblemAnswerRequestDTO problemAnswerRequestDTO) throws IOException, PythonSyntaxErrorException {
+        Editor editor = editorService.compileWithPython(Editor.of(problemAnswerRequestDTO));
 
         return ApiResponse.createSuccess(EditorResponseDTO.of(editor));
     }
 
     @PostMapping("/compile/java")
-    public Object compileWithJava(@RequestBody EditorRequestDTO editorRequestDTO) throws FileDeleteException, FolderDeleteException {
-
-        Object object = javaCompilerUtil.compile(Editor.of(editorRequestDTO));
+    public Object compileWithJava(@RequestBody ProblemAnswerRequestDTO problemAnswerRequestDTO) throws FileDeleteException, FolderDeleteException {
+        Object object = javaCompilerUtil.compile(ProblemAnswer.of(problemAnswerRequestDTO));
         if (object instanceof String) {
             return object;
         }
@@ -43,7 +43,7 @@ public class EditorApiController {
         int participant = 1;
         Object[] params = {participant};
 
-        Map<String, Object> output = javaCompilerUtil.runWithJava(object, params);
+        Map<String, Object> output = javaCompilerUtil.run(object, params, null);
         System.out.println("output = " + output);
 
         long afterTime = System.currentTimeMillis();

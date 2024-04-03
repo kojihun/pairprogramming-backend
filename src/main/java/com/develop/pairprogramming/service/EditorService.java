@@ -4,21 +4,15 @@ import com.develop.pairprogramming.exception.FileDeleteException;
 import com.develop.pairprogramming.exception.FolderDeleteException;
 import com.develop.pairprogramming.exception.PythonSyntaxErrorException;
 import com.develop.pairprogramming.model.Editor;
+import com.develop.pairprogramming.model.ProblemAnswer;
 import com.develop.pairprogramming.util.JavaCompilerUtil;
-import com.develop.pairprogramming.util.MethodExecutationUtil;
-import com.develop.pairprogramming.util.PythonCompilerUtil;
 import lombok.RequiredArgsConstructor;
 import org.python.util.PythonInterpreter;
 import org.springframework.stereotype.Service;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 import java.io.*;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -43,18 +37,22 @@ public class EditorService {
                 .build();
     }
 
-    public Object compileWithJava(Editor editor) throws FileDeleteException, FolderDeleteException {
-        Object object = javaCompilerUtil.compile(editor);
+    public Object compileWithJava(ProblemAnswer problemAnswer) throws FileDeleteException, FolderDeleteException {
+        Object object = javaCompilerUtil.compile(problemAnswer);
         if (object instanceof String) {
             return object;
         }
 
         long beforeTime = System.currentTimeMillis();
 
-        int participant = 1;
-        Object[] params = {participant};
+//        String participant[] = new String[] {"marina", "josipa", "nikola", "vinko", "filipa"};
+//        String completion[] = new String[] {"josipa", "filipa", "marina", "nikola"};
+//        Object[] params = {participant, completion};
 
-        Map<String, Object> output = javaCompilerUtil.runWithJava(object, params);
+        Object participant = 1;
+        Object[] params = {1};
+
+        Map<String, Object> output = javaCompilerUtil.run(object, params, null);
         System.out.println("output = " + output);
 
         long afterTime = System.currentTimeMillis();

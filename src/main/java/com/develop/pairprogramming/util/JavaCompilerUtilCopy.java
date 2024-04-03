@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
-public class JavaCompilerUtil {
+public class JavaCompilerUtilCopy {
     private static final String BASE_PATH = "C:/Users/ADMIN/Desktop/";
     private static final String CLASS_NAME = "Solution";
     private static final String METHOD_NAME = "solution";
@@ -109,6 +109,11 @@ public class JavaCompilerUtil {
             }
         }
 
+//        Class<?>[] arguments = extractParameterClasses(params);
+//        for (int i = 0; i < params.length; i++) {
+//            arguments[i] = params[i].getClass();
+//        }
+
         // 표준 출력 및 오류 스트림 임시 저장
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ByteArrayOutputStream byteArrayOutputStreamError = new ByteArrayOutputStream();
@@ -122,11 +127,11 @@ public class JavaCompilerUtil {
             System.setErr(new PrintStream(byteArrayOutputStreamError));
 
             // Java 메서드 실행
-            Map<String, Object> map = MethodExecutationUtil.timeOutCall(object, METHOD_NAME, params, arguments);
+            Map<String, Object> result = MethodExecutationUtil.timeOutCall(object, METHOD_NAME, params, arguments);
 
-            if (((String) map.get("status")).equals("SUCCESS")) {
-                returnMap.put("status", map.get("status"));
-                returnMap.put("return", map.get("return"));
+            if (((String) result.get("status")).equals("SUCCESS")) {
+                returnMap.put("status", result.get("status"));
+                returnMap.put("return", result.get("return"));
 
                 String outputStreamError = byteArrayOutputStreamError.toString();
                 if (StringUtils.hasText(outputStreamError)) {
@@ -136,7 +141,7 @@ public class JavaCompilerUtil {
                     returnMap.put("message", outputStream);
                 }
             } else {
-                returnMap.put("status", map.get("status"));
+                returnMap.put("status", "FAIL");
 
                 String outputStreamError = byteArrayOutputStreamError.toString();
                 if (StringUtils.hasText(outputStreamError)) {

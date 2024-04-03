@@ -1,15 +1,12 @@
 package com.develop.pairprogramming.controller;
 
 import com.develop.pairprogramming.dto.common.ApiResponse;
-import com.develop.pairprogramming.dto.request.EditorRequestDTO;
-import com.develop.pairprogramming.dto.request.MemberRequestDTO;
-import com.develop.pairprogramming.dto.response.ProblemDetailResponseDTO;
+import com.develop.pairprogramming.dto.request.ProblemAnswerRequestDTO;
 import com.develop.pairprogramming.dto.response.ProblemListResponseDTO;
 import com.develop.pairprogramming.dto.response.ProblemResponseDTO;
-import com.develop.pairprogramming.model.Editor;
-import com.develop.pairprogramming.model.Problem;
-import com.develop.pairprogramming.model.ProblemStandardFormat;
-import com.develop.pairprogramming.model.Rank;
+import com.develop.pairprogramming.exception.FileDeleteException;
+import com.develop.pairprogramming.exception.FolderDeleteException;
+import com.develop.pairprogramming.model.*;
 import com.develop.pairprogramming.service.EditorService;
 import com.develop.pairprogramming.service.ProblemService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @RequestMapping("/api/problems")
 @RequiredArgsConstructor
@@ -103,14 +99,10 @@ public class ProblemApiController {
     }
 
     @PostMapping("/compile")
-    public ApiResponse<?> doProblemCompile(@RequestBody EditorRequestDTO editorRequestDTO) throws IOException {
-        String languageType = editorRequestDTO.getLanguageType();
-        if (languageType.equals("python")) {
-            editorService.compileWithPython(Editor.of(editorRequestDTO));
-        } else {
-            Object stringObjectMap = editorService.compileWithJava(Editor.of(editorRequestDTO));
-            return ApiResponse.createSuccess(stringObjectMap);
-        }
+    public ApiResponse<?> doProblemCompile(@RequestBody ProblemAnswerRequestDTO problemAnswerRequestDTO) throws FileDeleteException, FolderDeleteException {
+        Problem problem = problemService.findProblemById(problemAnswerRequestDTO.getProblemId());
+        ProblemAnswer problemAnswer = ProblemAnswer.of(problemAnswerRequestDTO);
+        problemService.doProblemCompile(problemAnswer, problem);
         return ApiResponse.createSuccessWithNoContent();
     }
 }

@@ -1,6 +1,6 @@
 package com.develop.pairprogramming.model;
 
-import com.develop.pairprogramming.dto.request.EditorRequestDTO;
+import com.develop.pairprogramming.dto.request.ProblemAnswerRequestDTO;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,9 +17,9 @@ public class Editor {
         this.code = code;
     }
 
-    public static Editor of(EditorRequestDTO editorRequestDTO) {
+    public static Editor of(ProblemAnswerRequestDTO problemAnswerRequestDTO) {
         return Editor.builder()
-                .code(editorRequestDTO.getCode())
+                .code(problemAnswerRequestDTO.getCode())
                 .build();
     }
 }
