@@ -18,13 +18,16 @@ public class BearerAuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String accessToken = authorizationExtractor.extractAccessToken(request, "Bearer");
+        
+        // 추출한 AccessToken의 유효성 검사
         if (!jwtTokenProvider.validateToken(accessToken)) {
-            throw new NotValidateTokenException("로그인이 필요한 화면입니다.");
+            throw new NotValidateTokenException("로그인을 진행해주세요.");
         }
 
-        String memberId = jwtTokenProvider.getSubject(accessToken);
+        // 추출한 AccessToken으로부터 Member객체의 id를 얻어옴
+        Long memberId = jwtTokenProvider.extractMemberId(accessToken);
         request.setAttribute("memberId", memberId);
-
+        
         return true;
     }
 }

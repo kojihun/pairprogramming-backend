@@ -6,11 +6,11 @@ import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 public class ProblemAnswerRequestDTO {
+    private Long problemId;
     private String code;
     @Enumerated(EnumType.STRING)
     private ProblemAnswerLanguage language;
-    private Long problemId;
 }

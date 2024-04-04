@@ -12,6 +12,7 @@ public class MemberSignupResponseDTO {
     private String name;
 
     public MemberSignupResponseDTO() {
+
     }
 
     @Builder

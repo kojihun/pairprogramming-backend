@@ -23,4 +23,9 @@ public class ControllerExceptionHandler {
     public ApiResponse<?> doWhenNotValidateTokenExceptionThrown(NotValidateTokenException e) {
         return ApiResponse.createError(e.getMessage());
     }
+
+    @ExceptionHandler(Exception.class)
+    public ApiResponse<?> doWhenExceptionThrown(Exception e) {
+        return ApiResponse.createError(e.getMessage());
+    }
 }

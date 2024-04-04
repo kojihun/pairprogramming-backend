@@ -13,6 +13,7 @@ public class MemberSigninResponseDTO {
     private String accessToken;
 
     public MemberSigninResponseDTO() {
+
     }
 
     @Builder

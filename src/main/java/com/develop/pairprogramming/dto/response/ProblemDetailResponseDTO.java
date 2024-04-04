@@ -1,15 +1,11 @@
 package com.develop.pairprogramming.dto.response;
 
 import com.develop.pairprogramming.model.Problem;
-import com.develop.pairprogramming.model.Rank;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Lob;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
 
 @Setter
 @Getter
@@ -22,13 +18,14 @@ public class ProblemDetailResponseDTO {
     private String restriction;
     @Lob
     private String inputOutputExample;
-    private Rank rank;
+    private String rank;
 
     public ProblemDetailResponseDTO() {
+
     }
 
     @Builder
-    public ProblemDetailResponseDTO(Long problemId, String title, String description, String restriction, String inputOutputExample, Rank rank) {
+    public ProblemDetailResponseDTO(Long problemId, String title, String description, String restriction, String inputOutputExample, String rank) {
         this.problemId = problemId;
         this.title = title;
         this.description = description;
@@ -44,7 +41,7 @@ public class ProblemDetailResponseDTO {
                 .description(problem.getDescription())
                 .restriction(problem.getRestriction())
                 .inputOutputExample(problem.getInputOutputExample())
-                .rank(problem.getRank())
+                .rank(problem.getRank().name())
                 .build();
     }
 }

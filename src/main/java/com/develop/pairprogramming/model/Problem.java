@@ -21,6 +21,7 @@ public class Problem {
     private Rank rank;
 
     public Problem() {
+
     }
 
     @Builder

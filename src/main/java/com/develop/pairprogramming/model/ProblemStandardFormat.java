@@ -10,19 +10,20 @@ public class ProblemStandardFormat {
     @Id
     @GeneratedValue
     private Long problemStandardFormatId;
-    private String languageType;
-    private String standardFormat;
+    private String language;
+    private String format;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id")
     private Problem problem;
 
     public ProblemStandardFormat() {
+
     }
 
     @Builder
-    public ProblemStandardFormat(String languageType, String standardFormat) {
-        this.languageType = languageType;
-        this.standardFormat = standardFormat;
+    public ProblemStandardFormat(String language, String format) {
+        this.language = language;
+        this.format = format;
     }
 }

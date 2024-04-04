@@ -13,6 +13,7 @@ public class ProblemResponseDTO {
     private long totalPages;
 
     public ProblemResponseDTO() {
+
     }
 
     @Builder

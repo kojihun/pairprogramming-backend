@@ -12,44 +12,53 @@ import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
-    private final Key key;
+    private final Key secretKey;
 
     public JwtTokenProvider(@Value("${jwt.secret_key}") String secretKey) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(Member member) {
-        Date accessTokenIssuedAt = new Date();
-        Date accessTokenExpiresIn = new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24));
+    public String generateAccessToken(Member member) {
+        Date issuedAt = new Date();
+        Date expiresIn = new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24));
 
         return Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .setIssuedAt(accessTokenIssuedAt)
-                .setExpiration(accessTokenExpiresIn)
+                .setIssuedAt(issuedAt)
+                .setExpiration(expiresIn)
                 .claim("memberId", member.getMemberId())
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String getSubject(String token) {
+    public String extractSubject(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
     }
 
+    public Long extractMemberId(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("memberId", Long.class);
+    }
+
     public boolean validateToken(String token) {
         try {
             Jws<Claims> claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token);
 
-            Date accessTokenExpiresIn = claims.getBody().getExpiration();
-            if (accessTokenExpiresIn.before(new Date())) {
+            Date expiresIn = claims.getBody().getExpiration();
+            if (expiresIn.before(new Date())) {
                 return false;
             }
             return true;

@@ -18,6 +18,7 @@ public class ProblemTestCase {
     private Problem problem;
 
     public ProblemTestCase() {
+
     }
 
     @Builder

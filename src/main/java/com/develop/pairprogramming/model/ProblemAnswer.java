@@ -26,33 +26,22 @@ public class ProblemAnswer {
     private Problem problem;
 
     public ProblemAnswer() {
-    }
 
+    }
     @Builder
-    public ProblemAnswer(ProblemAnswerLanguage language, String code, ProblemAnswerStatus status, Member member, Problem problem) {
-        this.language = language;
+    public ProblemAnswer(Long problemAnswerId, String code, ProblemAnswerLanguage language, ProblemAnswerStatus status, Member member, Problem problem) {
+        this.problemAnswerId = problemAnswerId;
         this.code = code;
+        this.language = language;
         this.status = status;
         this.member = member;
-        this.problem = problem;
-    }
-
-    public void changeStatus(ProblemAnswerStatus status) {
-        this.status = status;
-    }
-
-    public void changeMember(Member member) {
-        this.member = member;
-    }
-
-    public void changeProblem(Problem problem) {
         this.problem = problem;
     }
 
     public static ProblemAnswer of(ProblemAnswerRequestDTO problemAnswerRequestDTO) {
         return ProblemAnswer.builder()
-                .language(problemAnswerRequestDTO.getLanguage())
                 .code(problemAnswerRequestDTO.getCode())
+                .language(problemAnswerRequestDTO.getLanguage())
                 .status(ProblemAnswerStatus.FAIL)
                 .build();
     }

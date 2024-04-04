@@ -16,6 +16,7 @@ public class ProblemListResponseDTO {
     private String rank;
 
     public ProblemListResponseDTO() {
+
     }
 
     @Builder
@@ -34,10 +35,11 @@ public class ProblemListResponseDTO {
     }
 
     public static List<ProblemListResponseDTO> listOf(List<Problem> problems) {
-        List<ProblemListResponseDTO> problemResponseDTOs = new ArrayList<>();
+        List<ProblemListResponseDTO> list = new ArrayList<>();
         for (Problem problem : problems) {
-            problemResponseDTOs.add(ProblemListResponseDTO.of(problem));
+            list.add(ProblemListResponseDTO.of(problem));
         }
-        return problemResponseDTOs;
+
+        return list;
     }
 }

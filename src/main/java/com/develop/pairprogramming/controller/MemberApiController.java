@@ -20,47 +20,51 @@ public class MemberApiController {
     private final JwtTokenProvider jwtTokenProvider;
 
     /**
-     * 회원가입
+     * 회원가입을 처리한다.
      *
      * @param memberRequestDTO 회원가입을 위한 정보가 담긴 DTO
+     * @return 회원가입 처리 결과를 담은 응답
      */
     @PostMapping("/signup")
     public ApiResponse<MemberSignupResponseDTO> signup(@RequestBody MemberRequestDTO memberRequestDTO) {
-        Member member = Member.of(memberRequestDTO);
-        memberService.signup(member);
+        Member newMember = Member.of(memberRequestDTO);
+        memberService.signup(newMember);
 
-        return ApiResponse.createSuccess(MemberSignupResponseDTO.of(member));
+        return ApiResponse.createSuccess(MemberSignupResponseDTO.of(newMember));
     }
 
     /**
-     * 이메일 유효성 검증
+     * 이메일 중복 여부를 확인한다.
      *
-     * @param memberRequestDTO 유효성 검증을 위한 이메일
+     * @param memberRequestDTO 중복 여부를 확인할 이메일이 담긴 DTO
+     * @return 중복 여부 확인 결과를 담은 응답
      */
     @PostMapping("/validation")
-    public ApiResponse<?> validateDuplicateEmail(@RequestBody MemberRequestDTO memberRequestDTO) {
-        memberService.validateDuplicateEmail(memberRequestDTO.getEmail());
+    public ApiResponse<?> validateEmailDuplicate(@RequestBody MemberRequestDTO memberRequestDTO) {
+        memberService.validateEmailDuplicate(memberRequestDTO.getEmail());
 
         return ApiResponse.createSuccessWithNoContent();
     }
 
     /**
-     * 로그인
+     * 회원 로그인을 처리한다.
      *
-     * @param memberRequestDTO email과 password가 있는 DTO
+     * @param memberRequestDTO 이메일과 비밀번호가 포함된 DTO
+     * @return 회원 로그인 처리 결과를 담은 응답
      */
     @PostMapping("/signin")
     public ApiResponse<MemberSigninResponseDTO> signin(@RequestBody MemberRequestDTO memberRequestDTO) {
-        Member member = Member.of(memberRequestDTO);
-        Member loginedMember = memberService.signin(member);
-        String accessToken = jwtTokenProvider.generateToken(loginedMember);
+        Member loggedInMember = memberService.signin(Member.of(memberRequestDTO));
+        String accessToken = jwtTokenProvider.generateAccessToken(loggedInMember);
 
-        return ApiResponse.createSuccess(MemberSigninResponseDTO.of(loginedMember, accessToken));
+        return ApiResponse.createSuccess(MemberSigninResponseDTO.of(loggedInMember, accessToken));
     }
 
     /**
-     * 로그아웃
+     * 회원 로그아웃을 처리한다.
      *
+     * @param request HTTP 요청 객체
+     * @return 회원 로그아웃 처리 결과를 담은 응답
      */
     @PostMapping("/signout")
     public ApiResponse<?> signout(HttpServletRequest request) {
@@ -71,10 +75,12 @@ public class MemberApiController {
     }
 
     /**
-     * 화면 마운트시 토큰 유효여부 확인
+     * 클라이언트 마운트 시 토큰의 유효성을 확인
+     * 
+     * @return 토큰 유효성 확인 결과를 담은 응답
      */
     @GetMapping("/token")
-    public ApiResponse<?> validateToken() {
+    public ApiResponse<?> checkTokenValidity() {
         return ApiResponse.createSuccessWithNoContent();
     }
 }

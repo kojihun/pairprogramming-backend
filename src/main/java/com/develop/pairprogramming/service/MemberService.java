@@ -37,7 +37,7 @@ public class MemberService {
      * 
      * @param email 중복 이메일인지 확인하기 위한 변수
      */
-    public void validateDuplicateEmail(String email) {
+    public void validateEmailDuplicate(String email) {
         List<Member> findMembers = memberRepository.findMemberByEmail(email);
         if (!findMembers.isEmpty()) {
             throw new DuplicateEmailException("이미 사용중인 이메일입니다.");
@@ -69,7 +69,7 @@ public class MemberService {
      * @return List<Member> 전체 회원 목록을 반환한다.
      */
     public List<Member> findAllMembers() {
-        return memberRepository.findAll();
+        return memberRepository.findAllMembers();
     }
 
     /**
@@ -79,6 +79,6 @@ public class MemberService {
      * @return Member 회원 객체를 반환한다.
      */
     public Member findMemberById(Long memberId) {
-        return memberRepository.findById(memberId);
+        return memberRepository.findMemberById(memberId);
     }
 }

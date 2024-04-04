@@ -21,6 +21,7 @@ public class ApiResponse<T> {
     private static final String ERROR_STATUS = "ERROR";
 
     private ApiResponse() {
+
     }
 
     @Builder

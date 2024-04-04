@@ -4,10 +4,12 @@ import com.develop.pairprogramming.dto.request.MemberRequestDTO;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+@Slf4j
 @Getter
 @Entity
 public class Member {
@@ -19,6 +21,7 @@ public class Member {
     private String name;
 
     public Member() {
+
     }
 
     @Builder
@@ -52,7 +55,7 @@ public class Member {
             }
             this.password = stringBuilder.toString();
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            log.error("예외가 발생했습니다.", e);
         }
     }
 }
