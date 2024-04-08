@@ -11,25 +11,23 @@ public class Problem {
     @GeneratedValue
     private Long problemId;
     private String title;
-    @Lob
     private String description;
-    @Lob
     private String restriction;
-    @Lob
     private String inputOutputExample;
     @Enumerated(EnumType.STRING)
-    private Rank rank;
+    private ProblemRank problemRank;
 
     public Problem() {
 
     }
 
     @Builder
-    public Problem(String title, String description, String restriction, String inputOutputExample, Rank rank) {
+    public Problem(Long problemId, String title, String description, String restriction, String inputOutputExample, ProblemRank problemRank) {
+        this.problemId = problemId;
         this.title = title;
         this.description = description;
         this.restriction = restriction;
         this.inputOutputExample = inputOutputExample;
-        this.rank = rank;
+        this.problemRank = problemRank;
     }
 }

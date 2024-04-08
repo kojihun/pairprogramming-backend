@@ -1,8 +1,6 @@
 package com.develop.pairprogramming.dto.response;
 
 import com.develop.pairprogramming.model.ProblemAnswer;
-import com.develop.pairprogramming.model.ProblemAnswerLanguage;
-import com.develop.pairprogramming.model.ProblemAnswerStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,24 +14,24 @@ import java.util.List;
 public class ProblemAnswerResponseDTO {
     private String code;
     private String language;
-    private String status;
+    private String uuid;
 
     public ProblemAnswerResponseDTO() {
 
     }
 
     @Builder
-    public ProblemAnswerResponseDTO(String code, String language, String status) {
+    public ProblemAnswerResponseDTO(String code, String language, String uuid) {
         this.code = code;
         this.language = language;
-        this.status = status;
+        this.uuid = uuid;
     }
 
     public static ProblemAnswerResponseDTO of(ProblemAnswer problemAnswer) {
         return ProblemAnswerResponseDTO.builder()
                 .code(problemAnswer.getCode())
                 .language(problemAnswer.getLanguage().name())
-                .status(problemAnswer.getStatus().name())
+                .uuid(problemAnswer.getUuid().toString())
                 .build();
     }
 

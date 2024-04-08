@@ -1,6 +1,6 @@
 package com.develop.pairprogramming.model;
 
-public enum Rank {
+public enum ProblemRank {
     LEVEL0,
     LEVEL1,
     LEVEL2,

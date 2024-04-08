@@ -1,6 +1,6 @@
 package com.develop.pairprogramming.model;
 
-public enum ProblemAnswerStatus {
+public enum ProblemStatus {
     SUCCESS,
     FAIL
 }

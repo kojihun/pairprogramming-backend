@@ -11,8 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -53,7 +56,7 @@ public class ProblemService {
      * @param pageSize     페이지 크기
      * @return 검색된 문제 목록을 반환한다.
      */
-    public List<Problem> findProblemsByRank(Rank searchSelect, int pageNumber, int pageSize) {
+    public List<Problem> findProblemsByRank(ProblemRank searchSelect, int pageNumber, int pageSize) {
         return problemRepository.findProblemsByRank(searchSelect, pageNumber, pageSize);
     }
 
@@ -66,7 +69,7 @@ public class ProblemService {
      * @param pageSize     페이지 크기
      * @return 검색된 문제 목록을 반환한다.
      */
-    public List<Problem> findProblemsByTitleAndRank(String searchInput, Rank searchSelect, int pageNumber, int pageSize) {
+    public List<Problem> findProblemsByTitleAndRank(String searchInput, ProblemRank searchSelect, int pageNumber, int pageSize) {
         return problemRepository.findProblemsByTitleAndRank(searchInput, searchSelect, pageNumber, pageSize);
     }
 
@@ -95,7 +98,7 @@ public class ProblemService {
      * @param searchSelect 등급
      * @return 조회된 문제 수
      */
-    public long countProblemsByRank(Rank searchSelect) {
+    public long countProblemsByRank(ProblemRank searchSelect) {
         return problemRepository.countProblemsByRank(searchSelect);
     }
 
@@ -106,7 +109,7 @@ public class ProblemService {
      * @param searchSelect 등급
      * @return 검색된 문제 수
      */
-    public long countProblemsByTitleAndRank(String searchInput, Rank searchSelect) {
+    public long countProblemsByTitleAndRank(String searchInput, ProblemRank searchSelect) {
         return problemRepository.countProblemsByTitleAndRank(searchInput, searchSelect);
     }
 
@@ -123,12 +126,52 @@ public class ProblemService {
     /**
      * 주어진 문제 표준 형식 ID와 언어 유형에 해당하는 문제 표준 형식을 반환하는 메서드
      *
-     * @param foundProblem 문제 객체
-     * @param languageType 언어 유형
+     * @param problem 문제 객체
+     * @param language 언어 유형
      * @return 주어진 문제 표준 형식 ID와 언어 유형에 해당하는 문제 표준 형식 객체
      */
-    public ProblemStandardFormat findProblemStandardFormatByProblemAndLanguage(Problem foundProblem, String languageType) {
-        return problemRepository.findProblemStandardFormatByProblemAndLanguage(foundProblem, languageType);
+    public ProblemFormat findProblemFormatByProblemAndLanguage(Problem problem, ProblemLanguage language) {
+        return problemRepository.findProblemFormatByProblemAndLanguage(problem, language);
+    }
+
+    @Transactional
+    public void initProblemAnswer(Problem problem, ProblemLanguage language, Member member) {
+        ProblemFormat problemFormat = problemRepository.findProblemFormatByProblemAndLanguage(problem, language);
+        ProblemAnswer initProblemAnswer = ProblemAnswer.builder()
+                .language(language)
+                .code(problemFormat.getCode())
+                .uuid(UUID.randomUUID())
+                .member(member)
+                .problem(problem)
+                .build();
+
+        problemRepository.saveProblemAnswer(initProblemAnswer);
+    }
+
+    @Transactional
+    public void modifyProblemAnswer(Problem problem, Member member, ProblemAnswer problemAnswer) {
+        List<ProblemAnswer> foundProblemAnswers = problemRepository.findProblemAnswerByProblemAndLanguageAndMember(problem, problemAnswer.getLanguage(), member);
+        if (!foundProblemAnswers.isEmpty()) {
+            ProblemAnswer foundProblemAnswer = foundProblemAnswers.get(0);
+            foundProblemAnswer.modifyCode(problemAnswer.getCode());
+        }
+    }
+
+    @Transactional
+    public void modifyProblemAnswerByUuid(Problem problem, UUID uuid, ProblemAnswer problemAnswer) {
+        List<ProblemAnswer> foundProblemAnswers = problemRepository.findProblemAnswerByProblemAndLanguageAndUuid(problem, problemAnswer.getLanguage(), uuid);
+        if (!foundProblemAnswers.isEmpty()) {
+            ProblemAnswer foundProblemAnswer = foundProblemAnswers.get(0);
+            foundProblemAnswer.modifyCode(problemAnswer.getCode());
+        }
+    }
+
+    public List<ProblemAnswer> findProblemAnswerByProblemAndLanguageAndMember(Problem problem, ProblemLanguage language, Member member) {
+        return problemRepository.findProblemAnswerByProblemAndLanguageAndMember(problem, language, member);
+    }
+
+    public List<ProblemAnswer> findProblemAnswerByProblemAndLanguageAndUuid(Problem problem, ProblemLanguage language, UUID uuid) {
+        return problemRepository.findProblemAnswerByProblemAndLanguageAndUuid(problem, language, uuid);
     }
 
     /**
@@ -152,32 +195,55 @@ public class ProblemService {
         return problemRepository.findAllProblemAnswersByProblemAndMember(problem, member);
     }
 
+    public List<ProblemAnswerSubmit> findAllProblemAnswerSubmitsByProblemAndMember(Problem problem, Member member) {
+        return problemRepository.findAllProblemAnswerSubmitsByProblemAndMember(problem, member);
+    }
+
+    public List<ProblemAnswerSubmit> findAllProblemAnswerSubmitsByProblemAndUuid(Problem problem, UUID uuid) {
+        return problemRepository.findAllProblemAnswerSubmitsByProblemAndUuid(problem, uuid);
+    }
+
     @Transactional
-    public void doProblemCompile(ProblemAnswer problemAnswer, Problem problem, Member member) throws FileDeleteException, FolderDeleteException {
-        ProblemAnswerLanguage language = problemAnswer.getLanguage();
+    public List<ProblemTestResult> compile(ProblemAnswer problemAnswer, Problem problem, Member member) throws FileDeleteException, FolderDeleteException {
+        ProblemLanguage language = problemAnswer.getLanguage();
         switch (language) {
             case PYTHON:
                 // Python 컴파일 로직
-                break;
+                return null;
             case JAVA:
                 Object compileResult = javaCompilerUtil.compile(problemAnswer);
                 if (compileResult instanceof String) {
                     throw new JavaCompileErrorException((String) compileResult);
                 }
 
-                boolean isSuccess = runJavaTests(compileResult, problem);
-                ProblemAnswer updatedProblemAnswer = ProblemAnswer.builder()
-                        .code(problemAnswer.getCode())
-                        .language(problemAnswer.getLanguage())
-                        .status(isSuccess ? ProblemAnswerStatus.SUCCESS : ProblemAnswerStatus.FAIL)
-                        .member(member)
-                        .problem(problem)
-                        .build();
+                List<ProblemTestResult> problemTestResults = runJavaTests(compileResult, problem);
+                boolean isSuccess = true;
+                for (ProblemTestResult testResult : problemTestResults) {
+                    if (testResult.getStatus().equals("FAIL")) {
+                        isSuccess = false;
+                        break;
+                    }
+                }
 
-                problemRepository.saveProblemAnswer(updatedProblemAnswer);
-                break;
+                List<ProblemAnswer> foundProblemAnswers = problemRepository.findProblemAnswerByProblemAndLanguageAndMember(problem, problemAnswer.getLanguage(), member);
+                if (!foundProblemAnswers.isEmpty()) {
+                    ProblemAnswer foundProblemAnswer = foundProblemAnswers.get(0);
+                    foundProblemAnswer.modifyCode(problemAnswer.getCode());
+
+                    ProblemAnswerSubmit problemAnswerSubmit = ProblemAnswerSubmit.builder()
+                            .code(foundProblemAnswer.getCode())
+                            .language(foundProblemAnswer.getLanguage())
+                            .uuid(foundProblemAnswer.getUuid())
+                            .status(isSuccess ? ProblemStatus.SUCCESS : ProblemStatus.FAIL)
+                            .submitDate(new Timestamp(System.currentTimeMillis()))
+                            .build();
+
+                    problemRepository.saveProblemAnswerSubmit(problemAnswerSubmit);
+                }
+
+                return problemTestResults;
             default:
-                break;
+                return null;
         }
     }
 
@@ -188,21 +254,37 @@ public class ProblemService {
      * @param problem 문제 객체
      * @return 모든 테스트 케이스가 성공했는지 여부를 나타내는 boolean 값
      */
-    private boolean runJavaTests(Object compileResult, Problem problem) {
-        boolean isSuccess = true;
+    private List<ProblemTestResult> runJavaTests(Object compileResult, Problem problem) {
+        List<ProblemTestResult> problemTestResults = new ArrayList<>();
 
         List<ProblemTestCase> problemTestCases = problemRepository.findAllProblemTestCasesByProblem(problem);
-        for (ProblemTestCase testCase : problemTestCases) {
-            Object[] params = {testCase.getInput()};
-            String expectedOutput = testCase.getOutput();
+        for (int i = 0; i < problemTestCases.size(); i++) {
+            Object[] params = {problemTestCases.get(i).getInput()};
+            String expectedOutput = problemTestCases.get(i).getOutput();
 
             Map<String, Object> runResult = javaCompilerUtil.run(compileResult, params, expectedOutput);
             if (!runResult.get("return").equals(expectedOutput)) {
-                return !isSuccess;
+                problemTestResults.add(ProblemTestResult.builder()
+                        .problemTestCaseNo(i + 1L)
+                        .input(problemTestCases.get(i).getInput())
+                        .expectedOutput(problemTestCases.get(i).getOutput())
+                        .actualOutput((String) runResult.get("return"))
+                        .message((String) runResult.get("message"))
+                        .status("SUCCESS")
+                        .build());
+            } else {
+                problemTestResults.add(ProblemTestResult.builder()
+                        .problemTestCaseNo(i + 1L)
+                        .input(problemTestCases.get(i).getInput())
+                        .expectedOutput(problemTestCases.get(i).getOutput())
+                        .actualOutput((String) runResult.get("return"))
+                        .message((String) runResult.get("message"))
+                        .status("FAIL")
+                        .build());
             }
         }
 
-        return isSuccess;
+        return problemTestResults;
     }
 
     private boolean runPythonTests() {

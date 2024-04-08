@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -50,7 +51,7 @@ public class ProblemRepository {
      * @param pageSize 페이지당 문제 수
      * @return 검색된 등급에 해당하는 문제 객체의 리스트
      */
-    public List<Problem> findProblemsByRank(Rank searchSelect, int pageNumber, int pageSize) {
+    public List<Problem> findProblemsByRank(ProblemRank searchSelect, int pageNumber, int pageSize) {
         return em.createQuery("select p from Problem p where p.rank = :searchSelect", Problem.class)
                 .setParameter("searchSelect", searchSelect)
                 .setFirstResult((pageNumber - 1) * pageSize)
@@ -67,7 +68,7 @@ public class ProblemRepository {
      * @param pageSize 페이지당 문제 수
      * @return 검색된 제목과 등급에 해당하는 문제 리스트
      */
-    public List<Problem> findProblemsByTitleAndRank(String searchInput, Rank searchSelect, int pageNumber, int pageSize) {
+    public List<Problem> findProblemsByTitleAndRank(String searchInput, ProblemRank searchSelect, int pageNumber, int pageSize) {
         return em.createQuery("select p from Problem p where p.title like concat('%', :searchInput, '%') and p.rank = :searchSelect", Problem.class)
                 .setParameter("searchInput", searchInput)
                 .setParameter("searchSelect", searchSelect)
@@ -104,7 +105,7 @@ public class ProblemRepository {
      * @param searchSelect 등급
      * @return 검색된 등급에 해당하는 문제의 총 개수
      */
-    public long countProblemsByRank(Rank searchSelect) {
+    public long countProblemsByRank(ProblemRank searchSelect) {
         return em.createQuery("select count(p) from Problem p where p.rank = :searchSelect", Long.class)
                 .setParameter("searchSelect", searchSelect)
                 .getSingleResult();
@@ -117,7 +118,7 @@ public class ProblemRepository {
      * @param searchSelect 등급
      * @return 검색된 제목과 등급에 해당하는 문제의 총 개수
      */
-    public long countProblemsByTitleAndRank(String searchInput, Rank searchSelect) {
+    public long countProblemsByTitleAndRank(String searchInput, ProblemRank searchSelect) {
         return em.createQuery("select count(p) from Problem p where p.title like concat('%', :searchInput, '%') and p.rank = :searchSelect", Long.class)
                 .setParameter("searchInput", searchInput)
                 .setParameter("searchSelect", searchSelect)
@@ -153,11 +154,41 @@ public class ProblemRepository {
      * @param language 언어유형
      * @return 주어진 문제와 언어 유형에 해당하는 표준 형식 객체
      */
-    public ProblemStandardFormat findProblemStandardFormatByProblemAndLanguage(Problem problem, String language) {
-        return em.createQuery("select p from ProblemStandardFormat p where p.problem = :problem and p.language = :language", ProblemStandardFormat.class)
+    public ProblemFormat findProblemFormatByProblemAndLanguage(Problem problem, ProblemLanguage language) {
+        return em.createQuery("select p from ProblemFormat p where p.problem = :problem and p.language = :language", ProblemFormat.class)
                 .setParameter("problem", problem)
                 .setParameter("language", language)
                 .getSingleResult();
+    }
+
+    public List<ProblemAnswer> findProblemAnswerByProblemAndLanguageAndMember(Problem problem, ProblemLanguage language, Member member) {
+        return em.createQuery("select p from ProblemAnswer p where p.problem = :problem and p.language = :language and p.member = :member", ProblemAnswer.class)
+                .setParameter("problem", problem)
+                .setParameter("language", language)
+                .setParameter("member", member)
+                .getResultList();
+    }
+
+    public List<ProblemAnswer> findProblemAnswerByProblemAndLanguageAndUuid(Problem problem, ProblemLanguage language, UUID uuid) {
+        return em.createQuery("select p from ProblemAnswer p where p.problem = :problem and p.language = :language and p.uuid = :uuid", ProblemAnswer.class)
+                .setParameter("problem", problem)
+                .setParameter("language", language)
+                .setParameter("uuid", uuid)
+                .getResultList();
+    }
+
+    public List<ProblemAnswerSubmit> findAllProblemAnswerSubmitsByProblemAndMember(Problem problem, Member member) {
+        return em.createQuery("select p from ProblemAnswerSubmit p where p.problem = :problem and p.member = :member", ProblemAnswerSubmit.class)
+                .setParameter("problem", problem)
+                .setParameter("member", member)
+                .getResultList();
+    }
+
+    public List<ProblemAnswerSubmit> findAllProblemAnswerSubmitsByProblemAndUuid(Problem problem, UUID uuid) {
+        return em.createQuery("select p from ProblemAnswerSubmit p where p.problem = :problem and p.uuid = :uuid", ProblemAnswerSubmit.class)
+                .setParameter("problem", problem)
+                .setParameter("uuid", uuid)
+                .getResultList();
     }
 
     /**
@@ -167,6 +198,10 @@ public class ProblemRepository {
      */
     public void saveProblemAnswer(ProblemAnswer problemAnswer) {
         em.persist(problemAnswer);
+    }
+
+    public void saveProblemAnswerSubmit(ProblemAnswerSubmit problemAnswerSubmit) {
+        em.persist(problemAnswerSubmit);
     }
 
     /**

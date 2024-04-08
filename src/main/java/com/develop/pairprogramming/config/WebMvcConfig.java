@@ -21,8 +21,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/api/members/signin",
                         "/api/members/signup",
                         "/api/members/validation",
-                        "/api/problems/all",
-                        "/api/problems/compile"
+                        "/api/problems/all"
                 )
                 .addPathPatterns(
                         "/api/members/**",

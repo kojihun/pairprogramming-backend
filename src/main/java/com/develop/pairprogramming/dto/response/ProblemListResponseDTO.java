@@ -30,7 +30,7 @@ public class ProblemListResponseDTO {
         return ProblemListResponseDTO.builder()
                 .problemId(problem.getProblemId())
                 .title(problem.getTitle())
-                .rank(problem.getRank().name())
+                .rank(problem.getProblemRank().name())
                 .build();
     }
 

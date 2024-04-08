@@ -1,6 +1,6 @@
 package com.develop.pairprogramming.model;
 
-public enum ProblemAnswerLanguage {
+public enum ProblemLanguage {
     PYTHON,
     JAVA
 }

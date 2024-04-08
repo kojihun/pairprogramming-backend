@@ -2,10 +2,7 @@ package com.develop.pairprogramming.controller;
 
 import com.develop.pairprogramming.dto.common.ApiResponse;
 import com.develop.pairprogramming.dto.request.ProblemAnswerRequestDTO;
-import com.develop.pairprogramming.dto.response.ProblemAnswerResponseDTO;
-import com.develop.pairprogramming.dto.response.ProblemDetailResponseDTO;
-import com.develop.pairprogramming.dto.response.ProblemListResponseDTO;
-import com.develop.pairprogramming.dto.response.ProblemResponseDTO;
+import com.develop.pairprogramming.dto.response.*;
 import com.develop.pairprogramming.exception.FileDeleteException;
 import com.develop.pairprogramming.exception.FolderDeleteException;
 import com.develop.pairprogramming.model.*;
@@ -13,9 +10,11 @@ import com.develop.pairprogramming.service.MemberService;
 import com.develop.pairprogramming.service.ProblemService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RequestMapping("/api/problems")
 @RequiredArgsConstructor
@@ -38,7 +37,7 @@ public class ProblemApiController {
             @RequestParam(name = "pageNumber", defaultValue = "1") int pageNumber,
             @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
             @RequestParam(name = "searchInput", required = false) String searchInput,
-            @RequestParam(name = "searchSelect", required = false) Rank searchSelect) {
+            @RequestParam(name = "searchSelect", required = false) ProblemRank searchSelect) {
         List<Problem> problems;
         long totalPages;
 
@@ -75,7 +74,7 @@ public class ProblemApiController {
      * @param searchSelect 등급
      * @return 등급이 유효한지 여부를 나타내는 boolean 값
      */
-    private boolean isSearchSelectValid(Rank searchSelect) {
+    private boolean isSearchSelectValid(ProblemRank searchSelect) {
         return searchSelect != null;
     }
 
@@ -100,30 +99,66 @@ public class ProblemApiController {
      * @return 문제의 표준 형식을 포함한 응답
      */
     @GetMapping("/format")
-    public ApiResponse<?> getProblemStandardFormat(
+    public ApiResponse<ProblemAnswerResponseDTO> getProblemFormat(
             @RequestParam(name = "problemId") Long problemId,
-            @RequestParam(name = "language") String language) {
+            @RequestParam(name = "language") ProblemLanguage language,
+            HttpServletRequest request) {
         Problem foundProblem = problemService.findProblemById(problemId);
-        ProblemStandardFormat problemStandardFormat = problemService.findProblemStandardFormatByProblemAndLanguage(foundProblem, language);
-
-        return ApiResponse.createSuccess(problemStandardFormat);
-    }
-
-    /**
-     * 문제를 컴파일한다.
-     *
-     * @param problemAnswerRequestDTO 문제 답변 정보가 담긴 DTO
-     * @return 컴파일 결과를 담은 응답
-     * @throws FileDeleteException 파일 삭제 예외
-     * @throws FolderDeleteException 폴더 삭제 예외
-     */
-    @PostMapping("/compile")
-    public ApiResponse<?> compileProblem(@RequestBody ProblemAnswerRequestDTO problemAnswerRequestDTO, HttpServletRequest request) throws FileDeleteException, FolderDeleteException {
-        Problem foundProblem = problemService.findProblemById(problemAnswerRequestDTO.getProblemId());
         Member foundMember = memberService.findMemberById((Long) request.getAttribute("memberId"));
 
-        ProblemAnswer problemAnswer = ProblemAnswer.of(problemAnswerRequestDTO);
-        problemService.doProblemCompile(problemAnswer, foundProblem, foundMember);
+        List<ProblemAnswer> foundProblemAnswers = problemService.findProblemAnswerByProblemAndLanguageAndMember(foundProblem, language, foundMember);
+        if (foundProblemAnswers.isEmpty()) {
+            problemService.initProblemAnswer(foundProblem, language, foundMember);
+        }
+
+        List<ProblemAnswer> problemAnswers = problemService.findProblemAnswerByProblemAndLanguageAndMember(foundProblem, language, foundMember);
+        return ApiResponse.createSuccess(ProblemAnswerResponseDTO.of(problemAnswers.get(0)));
+    }
+
+    @GetMapping("/format/{uuid}")
+    public ApiResponse<?> getProblemFormatByUuid(
+            @RequestParam(name = "problemId") Long problemId,
+            @RequestParam(name = "language") ProblemLanguage language,
+            @PathVariable(name = "uuid") String uuid) {
+        Problem foundProblem = problemService.findProblemById(problemId);
+
+        List<ProblemAnswer> foundProblemAnswers = problemService.findProblemAnswerByProblemAndLanguageAndUuid(foundProblem, language, UUID.fromString(uuid));
+        if (foundProblemAnswers.isEmpty()) {
+            ProblemFormat foundProblemFormat = problemService.findProblemFormatByProblemAndLanguage(foundProblem, language);
+            return ApiResponse.createSuccess(foundProblemFormat);
+        } else {
+            return ApiResponse.createSuccess(ProblemAnswerResponseDTO.of(foundProblemAnswers.get(0)));
+        }
+    }
+
+    @GetMapping("/format/clear")
+    public ApiResponse<ProblemFormatResponseDTO> clearProblemFormat(
+            @RequestParam(name = "problemId") Long problemId,
+            @RequestParam(name = "language") ProblemLanguage language) {
+        Problem foundProblem = problemService.findProblemById(problemId);
+        ProblemFormat foundProblemFormat = problemService.findProblemFormatByProblemAndLanguage(foundProblem, language);
+
+        return ApiResponse.createSuccess(ProblemFormatResponseDTO.of(foundProblemFormat));
+    }
+
+    @PostMapping("/answer")
+    public ApiResponse<?> postProblemAnswer(
+            @RequestBody ProblemAnswerRequestDTO requestDTO,
+            HttpServletRequest request) {
+        Problem foundProblem = problemService.findProblemById(requestDTO.getProblemId());
+        Member foundMember = memberService.findMemberById((Long) request.getAttribute("memberId"));
+
+        problemService.modifyProblemAnswer(foundProblem, foundMember, ProblemAnswer.of(requestDTO));
+        return ApiResponse.createSuccessWithNoContent();
+    }
+
+    @PostMapping("/answer/{uuid}")
+    public ApiResponse<?> postProblemAnswerByUuid(
+            @RequestBody ProblemAnswerRequestDTO requestDTO,
+            @PathVariable(name = "uuid") String uuid) {
+        Problem foundProblem = problemService.findProblemById(requestDTO.getProblemId());
+
+        problemService.modifyProblemAnswerByUuid(foundProblem, UUID.fromString(uuid), ProblemAnswer.of(requestDTO));
         return ApiResponse.createSuccessWithNoContent();
     }
 
@@ -134,12 +169,41 @@ public class ProblemApiController {
      * @param request HTTP 요청 객체
      * @return 문제에 대한 제출 목록을 담은 응답
      */
-    @GetMapping("/answer")
-    public ApiResponse<?> getProblemAnswers(@RequestParam(name = "problemId") Long problemId, HttpServletRequest request) {
+    @GetMapping("/answer/submit")
+    public ApiResponse<?> getProblemAnswerSubmits(
+            @RequestParam(name = "problemId") Long problemId,
+            HttpServletRequest request) {
         Problem foundProblem = problemService.findProblemById(problemId);
         Member foundMember = memberService.findMemberById((Long) request.getAttribute("memberId"));
 
-        List<ProblemAnswer> problemAnswers = problemService.findAllProblemAnswersByProblemAndMember(foundProblem, foundMember);
-        return ApiResponse.createSuccess(ProblemAnswerResponseDTO.listOf(problemAnswers));
+        List<ProblemAnswerSubmit> problemAnswerSubmits = problemService.findAllProblemAnswerSubmitsByProblemAndMember(foundProblem, foundMember);
+        return ApiResponse.createSuccess(problemAnswerSubmits);
+    }
+
+    @GetMapping("/answer/submit/{uuid}")
+    public ApiResponse<?> getProblemAnswerSubmitsByUuid(
+            @RequestParam(name = "problemId") Long problemId,
+            @PathVariable(name = "uuid") String uuid) {
+        Problem foundProblem = problemService.findProblemById(problemId);
+
+        List<ProblemAnswerSubmit> problemAnswerSubmits = problemService.findAllProblemAnswerSubmitsByProblemAndUuid(foundProblem, UUID.fromString(uuid));
+        return ApiResponse.createSuccess(problemAnswerSubmits);
+    }
+
+    /**
+     * 문제를 컴파일한다.
+     *
+     * @param requestDTO 문제 답변 정보가 담긴 DTO
+     * @return 컴파일 결과를 담은 응답
+     * @throws FileDeleteException 파일 삭제 예외
+     * @throws FolderDeleteException 폴더 삭제 예외
+     */
+    @PostMapping("/compile")
+    public ApiResponse<?> compileProblem(@RequestBody ProblemAnswerRequestDTO requestDTO, HttpServletRequest request) throws FileDeleteException, FolderDeleteException {
+        Problem foundProblem = problemService.findProblemById(requestDTO.getProblemId());
+        Member foundMember = memberService.findMemberById((Long) request.getAttribute("memberId"));
+
+        List<ProblemTestResult> problemTestResults = problemService.compile(ProblemAnswer.of(requestDTO), foundProblem, foundMember);
+        return ApiResponse.createSuccess(problemTestResults);
     }
 }

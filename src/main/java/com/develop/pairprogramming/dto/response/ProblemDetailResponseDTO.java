@@ -41,7 +41,7 @@ public class ProblemDetailResponseDTO {
                 .description(problem.getDescription())
                 .restriction(problem.getRestriction())
                 .inputOutputExample(problem.getInputOutputExample())
-                .rank(problem.getRank().name())
+                .rank(problem.getProblemRank().name())
                 .build();
     }
 }

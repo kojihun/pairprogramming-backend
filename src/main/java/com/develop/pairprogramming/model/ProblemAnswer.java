@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.UUID;
+
 @Getter
 @Entity
 public class ProblemAnswer {
@@ -13,9 +15,8 @@ public class ProblemAnswer {
     private Long problemAnswerId;
     private String code;
     @Enumerated(EnumType.STRING)
-    private ProblemAnswerLanguage language;
-    @Enumerated(EnumType.STRING)
-    private ProblemAnswerStatus status;
+    private ProblemLanguage language;
+    private UUID uuid;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_Id")
@@ -25,15 +26,20 @@ public class ProblemAnswer {
     @JoinColumn(name = "problem_id")
     private Problem problem;
 
+    public void modifyCode(String code) {
+        this.code = code;
+    }
+
     public ProblemAnswer() {
 
     }
+
     @Builder
-    public ProblemAnswer(Long problemAnswerId, String code, ProblemAnswerLanguage language, ProblemAnswerStatus status, Member member, Problem problem) {
+    public ProblemAnswer(Long problemAnswerId, String code, ProblemLanguage language, UUID uuid, Member member, Problem problem) {
         this.problemAnswerId = problemAnswerId;
         this.code = code;
         this.language = language;
-        this.status = status;
+        this.uuid = uuid;
         this.member = member;
         this.problem = problem;
     }
@@ -42,7 +48,6 @@ public class ProblemAnswer {
         return ProblemAnswer.builder()
                 .code(problemAnswerRequestDTO.getCode())
                 .language(problemAnswerRequestDTO.getLanguage())
-                .status(ProblemAnswerStatus.FAIL)
                 .build();
     }
 }

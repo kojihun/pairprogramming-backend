@@ -22,7 +22,8 @@ public class ProblemTestCase {
     }
 
     @Builder
-    public ProblemTestCase(String input, String output, Problem problem) {
+    public ProblemTestCase(Long problemTestCaseId, String input, String output, Problem problem) {
+        this.problemTestCaseId = problemTestCaseId;
         this.input = input;
         this.output = output;
         this.problem = problem;
