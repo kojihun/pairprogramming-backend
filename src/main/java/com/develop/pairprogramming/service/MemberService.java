@@ -29,6 +29,7 @@ public class MemberService {
     @Transactional
     public void signup(Member member) {
         member.encryptPassword();
+        member.initializeUuid();
         memberRepository.save(member);
     }
 

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
 @Slf4j
 @Getter
@@ -19,16 +20,18 @@ public class Member {
     private String email;
     private String password;
     private String name;
+    private UUID uuid;
 
     public Member() {
 
     }
-
     @Builder
-    public Member(String email, String password, String name) {
+    public Member(Long memberId, String email, String password, String name, UUID uuid) {
+        this.memberId = memberId;
         this.email = email;
         this.password = password;
         this.name = name;
+        this.uuid = uuid;
     }
 
     public static Member of(MemberRequestDTO memberRequestDTO) {
@@ -57,5 +60,9 @@ public class Member {
         } catch (NoSuchAlgorithmException e) {
             log.error("예외가 발생했습니다.", e);
         }
+    }
+
+    public void initializeUuid() {
+        this.uuid = UUID.randomUUID();
     }
 }

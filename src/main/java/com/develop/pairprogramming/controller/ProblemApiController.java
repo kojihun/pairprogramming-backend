@@ -8,9 +8,9 @@ import com.develop.pairprogramming.exception.FolderDeleteException;
 import com.develop.pairprogramming.model.*;
 import com.develop.pairprogramming.service.MemberService;
 import com.develop.pairprogramming.service.ProblemService;
+import com.develop.pairprogramming.service.problem.strategy.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,22 +38,20 @@ public class ProblemApiController {
             @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
             @RequestParam(name = "searchInput", required = false) String searchInput,
             @RequestParam(name = "searchSelect", required = false) ProblemRank searchSelect) {
-        List<Problem> problems;
-        long totalPages;
+        ProblemSearchStrategy problemSearchStrategy;
 
         if (isSearchInputValid(searchInput) && isSearchSelectValid(searchSelect)) {
-            problems = problemService.findProblemsByTitleAndRank(searchInput, searchSelect, pageNumber, pageSize);
-            totalPages = problemService.countProblemsByTitleAndRank(searchInput, searchSelect);
+            problemSearchStrategy = new TitleAndRankSearchStrategy(problemService, searchInput, searchSelect);
         } else if (isSearchInputValid(searchInput)) {
-            problems = problemService.findProblemsByTitle(searchInput, pageNumber, pageSize);
-            totalPages = problemService.countProblemsByTitle(searchInput);
+            problemSearchStrategy = new TitleSearchStrategy(problemService, searchInput);
         } else if (isSearchSelectValid(searchSelect)) {
-            problems = problemService.findProblemsByRank(searchSelect, pageNumber, pageSize);
-            totalPages = problemService.countProblemsByRank(searchSelect);
+            problemSearchStrategy = new RankSearchStrategy(problemService, searchSelect);
         } else {
-            problems = problemService.findAllProblems(pageNumber, pageSize);
-            totalPages = problemService.countAllProblems();
+            problemSearchStrategy = new AllProblemsSearchStrategy(problemService);
         }
+
+        List<Problem> problems = problemSearchStrategy.findProblems(pageNumber, pageSize);
+        long totalPages = problemSearchStrategy.countProblems();
 
         return ApiResponse.createSuccess(ProblemResponseDTO.of(ProblemListResponseDTO.listOf(problems), totalPages));
     }
@@ -172,11 +170,9 @@ public class ProblemApiController {
     @GetMapping("/answer/submit")
     public ApiResponse<?> getProblemAnswerSubmits(
             @RequestParam(name = "problemId") Long problemId,
-            HttpServletRequest request) {
-        Problem foundProblem = problemService.findProblemById(problemId);
-        Member foundMember = memberService.findMemberById((Long) request.getAttribute("memberId"));
+            @RequestParam(name = "uuid") String uuid) {
 
-        List<ProblemAnswerSubmit> problemAnswerSubmits = problemService.findAllProblemAnswerSubmitsByProblemAndMember(foundProblem, foundMember);
+        List<ProblemAnswerSubmit> problemAnswerSubmits = problemService.findAllProblemAnswerSubmitsByProblemIdAndUuid(problemId, UUID.fromString(uuid));
         return ApiResponse.createSuccess(problemAnswerSubmits);
     }
 

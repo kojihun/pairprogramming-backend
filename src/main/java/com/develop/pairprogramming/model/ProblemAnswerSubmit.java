@@ -20,6 +20,7 @@ public class ProblemAnswerSubmit {
     @Enumerated(EnumType.STRING)
     private ProblemStatus status;
     private Timestamp submitDate;
+    private Long problemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_answer_id")
@@ -30,13 +31,14 @@ public class ProblemAnswerSubmit {
     }
 
     @Builder
-    public ProblemAnswerSubmit(Long problemAnswerSubmitId, String code, ProblemLanguage language, UUID uuid, ProblemStatus status, Timestamp submitDate, ProblemAnswer problemAnswer) {
+    public ProblemAnswerSubmit(Long problemAnswerSubmitId, String code, ProblemLanguage language, UUID uuid, ProblemStatus status, Timestamp submitDate, Long problemId, ProblemAnswer problemAnswer) {
         this.problemAnswerSubmitId = problemAnswerSubmitId;
         this.code = code;
         this.language = language;
         this.uuid = uuid;
         this.status = status;
         this.submitDate = submitDate;
+        this.problemId = problemId;
         this.problemAnswer = problemAnswer;
     }
 }

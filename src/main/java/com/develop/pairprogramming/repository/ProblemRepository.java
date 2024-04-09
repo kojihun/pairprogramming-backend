@@ -52,7 +52,7 @@ public class ProblemRepository {
      * @return 검색된 등급에 해당하는 문제 객체의 리스트
      */
     public List<Problem> findProblemsByRank(ProblemRank searchSelect, int pageNumber, int pageSize) {
-        return em.createQuery("select p from Problem p where p.rank = :searchSelect", Problem.class)
+        return em.createQuery("select p from Problem p where p.problemRank = :searchSelect", Problem.class)
                 .setParameter("searchSelect", searchSelect)
                 .setFirstResult((pageNumber - 1) * pageSize)
                 .setMaxResults(pageSize)
@@ -69,7 +69,7 @@ public class ProblemRepository {
      * @return 검색된 제목과 등급에 해당하는 문제 리스트
      */
     public List<Problem> findProblemsByTitleAndRank(String searchInput, ProblemRank searchSelect, int pageNumber, int pageSize) {
-        return em.createQuery("select p from Problem p where p.title like concat('%', :searchInput, '%') and p.rank = :searchSelect", Problem.class)
+        return em.createQuery("select p from Problem p where p.title like concat('%', :searchInput, '%') and p.problemRank = :searchSelect", Problem.class)
                 .setParameter("searchInput", searchInput)
                 .setParameter("searchSelect", searchSelect)
                 .setFirstResult((pageNumber - 1) * pageSize)
@@ -106,7 +106,7 @@ public class ProblemRepository {
      * @return 검색된 등급에 해당하는 문제의 총 개수
      */
     public long countProblemsByRank(ProblemRank searchSelect) {
-        return em.createQuery("select count(p) from Problem p where p.rank = :searchSelect", Long.class)
+        return em.createQuery("select count(p) from Problem p where p.problemRank = :searchSelect", Long.class)
                 .setParameter("searchSelect", searchSelect)
                 .getSingleResult();
     }
@@ -119,7 +119,7 @@ public class ProblemRepository {
      * @return 검색된 제목과 등급에 해당하는 문제의 총 개수
      */
     public long countProblemsByTitleAndRank(String searchInput, ProblemRank searchSelect) {
-        return em.createQuery("select count(p) from Problem p where p.title like concat('%', :searchInput, '%') and p.rank = :searchSelect", Long.class)
+        return em.createQuery("select count(p) from Problem p where p.title like concat('%', :searchInput, '%') and p.problemRank = :searchSelect", Long.class)
                 .setParameter("searchInput", searchInput)
                 .setParameter("searchSelect", searchSelect)
                 .getSingleResult();
@@ -177,10 +177,10 @@ public class ProblemRepository {
                 .getResultList();
     }
 
-    public List<ProblemAnswerSubmit> findAllProblemAnswerSubmitsByProblemAndMember(Problem problem, Member member) {
-        return em.createQuery("select p from ProblemAnswerSubmit p where p.problem = :problem and p.member = :member", ProblemAnswerSubmit.class)
-                .setParameter("problem", problem)
-                .setParameter("member", member)
+    public List<ProblemAnswerSubmit> findAllProblemAnswerSubmitsByProblemAndMember(Long problemId, UUID uuid) {
+        return em.createQuery("select p from ProblemAnswerSubmit p where p.problemId = :problemId and p.uuid = :uuid", ProblemAnswerSubmit.class)
+                .setParameter("problemId", problemId)
+                .setParameter("uuid", uuid)
                 .getResultList();
     }
 

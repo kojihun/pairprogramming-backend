@@ -140,7 +140,7 @@ public class ProblemService {
         ProblemAnswer initProblemAnswer = ProblemAnswer.builder()
                 .language(language)
                 .code(problemFormat.getCode())
-                .uuid(UUID.randomUUID())
+                .uuid(member.getUuid())
                 .member(member)
                 .problem(problem)
                 .build();
@@ -195,8 +195,8 @@ public class ProblemService {
         return problemRepository.findAllProblemAnswersByProblemAndMember(problem, member);
     }
 
-    public List<ProblemAnswerSubmit> findAllProblemAnswerSubmitsByProblemAndMember(Problem problem, Member member) {
-        return problemRepository.findAllProblemAnswerSubmitsByProblemAndMember(problem, member);
+    public List<ProblemAnswerSubmit> findAllProblemAnswerSubmitsByProblemIdAndUuid(Long problemId, UUID uuid) {
+        return problemRepository.findAllProblemAnswerSubmitsByProblemAndMember(problemId, uuid);
     }
 
     public List<ProblemAnswerSubmit> findAllProblemAnswerSubmitsByProblemAndUuid(Problem problem, UUID uuid) {
@@ -236,6 +236,8 @@ public class ProblemService {
                             .uuid(foundProblemAnswer.getUuid())
                             .status(isSuccess ? ProblemStatus.SUCCESS : ProblemStatus.FAIL)
                             .submitDate(new Timestamp(System.currentTimeMillis()))
+                            .problemId(problem.getProblemId())
+                            .problemAnswer(foundProblemAnswer)
                             .build();
 
                     problemRepository.saveProblemAnswerSubmit(problemAnswerSubmit);
